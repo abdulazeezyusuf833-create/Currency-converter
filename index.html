@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Parity — Currency Converter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f1ea; --ink:#101827; --muted:#5d6676; --card:rgba(255,255,255,.66); --line:rgba(16,24,39,.12);
+  --jade:#0f9d6b; --gold:#b9852b; --orb1:#7fe3bc; --orb2:#f3cf86; --shadow:0 30px 80px -30px rgba(16,24,39,.35);
+  --serif:'Fraunces',Georgia,serif; --sans:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  color-scheme:light;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0a1019; --ink:#eef2f7; --muted:#8e9aae; --card:rgba(20,30,46,.62); --line:rgba(255,255,255,.1);
+    --jade:#3ddc97; --gold:#f2c46d; --orb1:#0f6b4d; --orb2:#7a5a1c; --shadow:0 30px 80px -30px rgba(0,0,0,.8); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0a1019; --ink:#eef2f7; --muted:#8e9aae; --card:rgba(20,30,46,.62); --line:rgba(255,255,255,.1);
+  --jade:#3ddc97; --gold:#f2c46d; --orb1:#0f6b4d; --orb2:#7a5a1c; --shadow:0 30px 80px -30px rgba(0,0,0,.8); color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{min-height:100%;background:var(--bg);color:var(--ink);font:500 16px/1.5 var(--sans);overflow-x:hidden;transition:background .4s,color .4s}
+body::before{content:"";position:fixed;inset:0;z-index:-1;
+  background:radial-gradient(40vmax 40vmax at var(--x1,15%) var(--y1,10%),var(--orb1),transparent 70%),
+             radial-gradient(35vmax 35vmax at var(--x2,85%) var(--y2,90%),var(--orb2),transparent 70%);
+  opacity:.55;animation:drift 22s ease-in-out infinite alternate}
+@keyframes drift{to{--x1:35%;transform:translate3d(2%,3%,0) scale(1.08)}}
+.wrap{max-width:980px;margin:0 auto;padding:clamp(16px,4vw,40px)}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:clamp(24px,6vw,56px)}
+.brand{font:600 1.4rem var(--serif);letter-spacing:.01em;display:flex;align-items:center;gap:.6rem}
+.brand i{width:26px;height:26px;border-radius:50%;background:conic-gradient(var(--jade),var(--gold),var(--jade));display:grid;place-items:center}
+.brand i::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--bg)}
+button{font:inherit;color:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);backdrop-filter:blur(14px);border-radius:999px;transition:transform .25s,border-color .25s,background .25s}
+button:hover{border-color:var(--jade)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--jade);outline-offset:3px}
+.icon-btn{width:42px;height:42px;display:grid;place-items:center;font-size:1.1rem}
+h1{font:400 clamp(2rem,6vw,3.6rem)/1.05 var(--serif);max-width:14ch;letter-spacing:-.02em;margin-bottom:12px}
+.lede{color:var(--muted);max-width:46ch;margin-bottom:clamp(24px,5vw,40px)}
+.card{background:var(--card);backdrop-filter:blur(22px);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow);padding:clamp(18px,4vw,36px)}
+label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:6px}
+.field{background:transparent;border:1px solid var(--line);border-radius:18px;padding:10px 16px;transition:border-color .25s,box-shadow .25s}
+.field:focus-within{border-color:var(--jade);box-shadow:0 0 0 4px color-mix(in srgb,var(--jade) 18%,transparent)}
+.field input,.field select{width:100%;border:0;background:transparent;color:var(--ink);font:inherit;outline:0}
+.field input{font:400 clamp(1.8rem,6vw,2.6rem) var(--serif);padding:2px 0}
+.field select{appearance:none;font-weight:700;font-size:1rem;cursor:pointer;padding:4px 0}
+.field select option{color:#101827;background:#fff}
+.pair{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:end;margin-top:20px}
+.sel{display:flex;align-items:center;gap:10px}
+.sel .flag{font-size:1.7rem;line-height:1}
+.swap{width:52px;height:52px;font-size:1.25rem;margin-bottom:4px}
+.swap.spin{transform:rotate(180deg)}
+.result{margin-top:28px;padding-top:24px;border-top:1px dashed var(--line);display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.result small{color:var(--muted);display:block}
+.big{font:600 clamp(2.2rem,9vw,4.6rem)/1.05 var(--serif);letter-spacing:-.02em;color:var(--jade);word-break:break-all}
+.big span{color:var(--gold);font-size:.45em;margin-left:.3em}
+.copy{padding:10px 20px;font-weight:700}
+.rate{margin-top:6px;color:var(--muted);font-size:.92rem}
+h2{font:400 1.5rem var(--serif);margin:clamp(28px,6vw,48px) 0 14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.chip{border-radius:20px;padding:14px 16px;text-align:left;display:grid;gap:2px}
+.chip:hover{transform:translateY(-3px)}
+.chip b{font:600 1.15rem var(--serif);overflow-wrap:anywhere}
+.chip span{color:var(--muted);font-size:.82rem}
+footer{margin-top:36px;color:var(--muted);font-size:.8rem;text-align:center}
+@media (max-width:560px){
+  .pair{grid-template-columns:1fr}
+  .swap{justify-self:center;margin:-4px 0}
+  .swap.spin{transform:rotate(540deg)}
+  .result{align-items:flex-start}
+}
+@media (prefers-reduced-motion:reduce){*,body::before{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><i></i>Parity</div>
+    <button class="icon-btn" id="theme" aria-label="Toggle light and dark theme">◐</button>
+  </header>
+
+  <h1>Every currency, one clear number.</h1>
+  <p class="lede">Type an amount, pick two currencies and see the value instantly.</p>
+
+  <main class="card">
+    <label for="amount">Amount</label>
+    <div class="field"><input id="amount" type="number" inputmode="decimal" min="0" step="any" value="100"></div>
+
+    <div class="pair">
+      <div><label for="from">From</label><div class="field sel"><span class="flag" id="fromFlag"></span><select id="from"></select></div></div>
+      <button class="swap" id="swap" aria-label="Swap currencies">⇄</button>
+      <div><label for="to">To</label><div class="field sel"><span class="flag" id="toFlag"></span><select id="to"></select></div></div>
+    </div>
+
+    <div class="result">
+      <div>
+        <small id="srcText"></small>
+        <div class="big" id="out" aria-live="polite"></div>
+        <p class="rate" id="rate"></p>
+      </div>
+      <button class="copy" id="copy">Copy result</button>
+    </div>
+  </main>
+
+  <h2>The same amount elsewhere</h2>
+  <div class="grid" id="grid"></div>
+
+  <footer>Reference rates are a built-in snapshot for illustration. Check your bank for live prices.</footer>
+</div>
+
+<script>
+// code, name, flag, units per 1 USD
+const DATA = [
+  ['USD','US Dollar','🇺🇸',1],['EUR','Euro','🇪🇺',.86],['GBP','British Pound','🇬🇧',.75],['NGN','Nigerian Naira','🇳🇬',1470],
+  ['JPY','Japanese Yen','🇯🇵',152],['CAD','Canadian Dollar','🇨🇦',1.39],['AUD','Australian Dollar','🇦🇺',1.54],['CHF','Swiss Franc','🇨🇭',.8],
+  ['CNY','Chinese Yuan','🇨🇳',7.12],['INR','Indian Rupee','🇮🇳',88.5],['ZAR','South African Rand','🇿🇦',17.3],['GHS','Ghanaian Cedi','🇬🇭',11],
+  ['KES','Kenyan Shilling','🇰🇪',129],['EGP','Egyptian Pound','🇪🇬',47.5],['AED','UAE Dirham','🇦🇪',3.6725],['SAR','Saudi Riyal','🇸🇦',3.75],
+  ['BRL','Brazilian Real','🇧🇷',5.4],['MXN','Mexican Peso','🇲🇽',18.4],['TRY','Turkish Lira','🇹🇷',42],['KRW','South Korean Won','🇰🇷',1420],
+  ['SGD','Singapore Dollar','🇸🇬',1.3],['HKD','Hong Kong Dollar','🇭🇰',7.77],['NZD','New Zealand Dollar','🇳🇿',1.73],['SEK','Swedish Krona','🇸🇪',9.4],
+  ['NOK','Norwegian Krone','🇳🇴',10.1],['PLN','Polish Złoty','🇵🇱',3.7],['THB','Thai Baht','🇹🇭',32.5],['MYR','Malaysian Ringgit','🇲🇾',4.2],
+  ['IDR','Indonesian Rupiah','🇮🇩',16600],['XOF','West African CFA','🇸🇳',565]
+];
+const MAP = Object.fromEntries(DATA.map(([c,n,f,r]) => [c,{name:n,flag:f,rate:r}]));
+const $ = id => document.getElementById(id);
+const el = {amount:$('amount'),from:$('from'),to:$('to'),out:$('out'),rate:$('rate'),src:$('srcText'),grid:$('grid')};
+let shown = 0, raf;
+
+const convert = (v, a, b) => v / MAP[a].rate * MAP[b].rate;
+const fmt = (v, code, max) => new Intl.NumberFormat(undefined, {
+  maximumFractionDigits: max ?? (v >= 100 ? 2 : v >= 1 ? 3 : 6)
+}).format(v);
+
+// populate selects once for both dropdowns
+const opts = DATA.map(([c,n,f]) => `<option value="${c}">${c} — ${n}</option>`).join('');
+el.from.innerHTML = el.to.innerHTML = opts;
+const store = {
+  get: k => { try { return localStorage.getItem(k); } catch { return null; } },
+  set: (k, v) => { try { localStorage.setItem(k, v); } catch {} }
+};
+el.from.value = store.get('from') || 'USD';
+el.to.value = store.get('to') || 'NGN';
+
+function animate(target, code) {
+  cancelAnimationFrame(raf);
+  const start = shown, t0 = performance.now();
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const step = now => {
+    const p = calm ? 1 : Math.min((now - t0) / 450, 1);
+    const v = start + (target - start) * (1 - Math.pow(1 - p, 3));
+    el.out.innerHTML = `${fmt(v, code, 2)}<span>${code}</span>`;
+    if (p < 1) raf = requestAnimationFrame(step); else shown = target;
+  };
+  raf = requestAnimationFrame(step);
+}
+
+function render() {
+  const a = el.from.value, b = el.to.value, v = parseFloat(el.amount.value) || 0;
+  $('fromFlag').textContent = MAP[a].flag;
+  $('toFlag').textContent = MAP[b].flag;
+  el.src.textContent = `${fmt(v, a)} ${MAP[a].name} equals`;
+  el.rate.textContent = `1 ${a} = ${fmt(convert(1, a, b), b)} ${b}  ·  1 ${b} = ${fmt(convert(1, b, a), a)} ${a}`;
+  animate(convert(v, a, b), b);
+
+  const picks = ['USD','EUR','GBP','NGN','JPY','CAD','AED','INR'].filter(c => c !== a).slice(0, 6);
+  el.grid.innerHTML = picks.map(c => `
+    <button class="chip" data-code="${c}">
+      <span>${MAP[c].flag} ${c}</span><b>${fmt(convert(v, a, c), c, 2)}</b><span>${MAP[c].name}</span>
+    </button>`).join('');
+  store.set('from', a); store.set('to', b);
+}
+
+el.amount.addEventListener('input', render);
+[el.from, el.to].forEach(s => s.addEventListener('change', render));
+el.grid.addEventListener('click', e => {
+  const chip = e.target.closest('.chip');
+  if (chip) { el.to.value = chip.dataset.code; render(); }
+});
+$('swap').addEventListener('click', e => {
+  [el.from.value, el.to.value] = [el.to.value, el.from.value];
+  e.currentTarget.classList.toggle('spin');
+  render();
+});
+$('copy').addEventListener('click', async e => {
+  const b = e.currentTarget, old = b.textContent;
+  try { await navigator.clipboard.writeText(el.out.textContent); b.textContent = 'Copied'; }
+  catch { b.textContent = 'Press Ctrl+C'; }
+  setTimeout(() => b.textContent = old, 1400);
+});
+$('theme').addEventListener('click', () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  root.dataset.theme = dark ? 'light' : 'dark';
+});
+
+render();
+</script>
+</body>
+</html>
